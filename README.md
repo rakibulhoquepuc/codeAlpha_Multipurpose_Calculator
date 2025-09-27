@@ -1,4 +1,4 @@
-# Multipurpose Calculator Suite  
+# Multipurpose Calculator 
 _A flexible, all-in-one web calculator — no installs, runs privately in your browser._  
 
 The Multipurpose Calculator Suite is a single-file HTML app that combines a **Basic Calculator**, **Scientific Functions**, **Weight Converter**, **Currency Exchange**, and **Extras** (like a tip calculator and themes). Open it by double-clicking, and switch between tabs to handle anything from quick arithmetic to advanced calculations.  
