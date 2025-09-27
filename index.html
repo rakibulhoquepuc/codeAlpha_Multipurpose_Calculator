@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Multipurpose Calculator Suite (Keyboard Fixed)</title>
+<style>
+  :root{
+    --bg:#0f1115; --surface:#151923; --card:#1a2030; --muted:#94a3b8;
+    --text:#ecf2ff; --primary:#00e5a8; --primary-2:#4fd1ff; --danger:#ff5d5d;
+    --ring: rgba(79, 209, 255, .25); --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; min-height:100svh; background:linear-gradient(135deg,#0f1115,#131826);
+       color:var(--text); font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial; display:grid; place-items:center; padding:20px}
+  .app{width:min(980px,95vw)}
+  .header{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px}
+  .title{font-size:22px; font-weight:800; letter-spacing:.2px}
+  .tabs{display:flex; gap:8px; flex-wrap:wrap}
+  .tab-btn{background:var(--card); border:1px solid #273146; color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer}
+  .tab-btn.active{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#0b1120; border-color:transparent; font-weight:800}
+  .grid{display:grid; gap:14px; grid-template-columns:1fr}
+  .panel{background:var(--card); border:1px solid #273146; border-radius:var(--radius); box-shadow:0 10px 30px rgba(0,0,0,.25); overflow:hidden}
+  .panel-header{padding:14px 16px; border-bottom:1px solid #273146; background:#131826; font-weight:700}
+  .panel-body{padding:14px 16px}
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .col{flex:1 1 240px}
+  .input, select, textarea{width:100%; padding:12px 12px; background:#0f1524; color:var(--text); border:1px solid #273146; border-radius:12px; outline:none}
+  .input:focus, select:focus, textarea:focus{box-shadow:0 0 0 4px var(--ring); border-color:transparent}
+  .btn{padding:12px 14px; border-radius:12px; border:1px solid #273146; background:#0f1524; color:var(--text); cursor:pointer}
+  .btn.primary{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#0b1120; border-color:transparent; font-weight:800}
+  .btn.danger{background:var(--danger); border-color:transparent; color:#fff}
+  .kbd{padding:2px 6px; background:#0f1524; border:1px solid #273146; border-radius:6px}
+  /* Calculator layouts */
+  .calc-wrap{display:grid; grid-template-columns:1fr; gap:12px}
+  .display{padding:16px 14px; background:#0b1220; border:1px solid #273146; border-radius:16px}
+  .expr{min-height:24px; color:var(--muted); font-size:14px; word-break:break-all}
+  .res{min-height:42px; font-size:28px; font-weight:800}
+  .keys{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+  .key{padding:14px 0; background:#11182a; border:1px solid #273146; border-radius:12px; font-weight:700; cursor:pointer; color:var(--text)}
+  .key.op{color:var(--primary-2)}
+  .key.eq{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#0b1120; border-color:transparent}
+  .key.danger{background:var(--danger); border-color:transparent}
+  .span-2{grid-column:span 2}
+  .note{color:var(--muted); font-size:12px}
+  .pill{display:inline-block; padding:2px 8px; border-radius:999px; background:#0f1524; border:1px solid #273146; font-size:12px; color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="title">Multipurpose Calculator Suite</div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="basic">Basic</button>
+        <button class="tab-btn" data-tab="scientific">Scientific</button>
+        <button class="tab-btn" data-tab="weight">Weight</button>
+        <button class="tab-btn" data-tab="currency">Currency</button>
+        <button class="tab-btn" data-tab="extras">Extras</button>
+      </div>
+    </div>
+
+    <!-- BASIC -->
+    <section class="panel" data-pane="basic">
+      <div class="panel-header">Basic Calculator</div>
+      <div class="panel-body">
+        <div class="calc-wrap">
+          <div class="display">
+            <div id="b-expr" class="expr">0</div>
+            <div id="b-res" class="res">0</div>
+          </div>
+          <div class="keys" id="b-keys">
+            <button class="key danger" data-act="clear">AC</button>
+            <button class="key" data-act="back">⌫</button>
+            <button class="key op" data-val="/">÷</button>
+            <button class="key op" data-val="*">×</button>
+
+            <button class="key" data-val="7">7</button>
+            <button class="key" data-val="8">8</button>
+            <button class="key" data-val="9">9</button>
+            <button class="key op" data-val="-">−</button>
+
+            <button class="key" data-val="4">4</button>
+            <button class="key" data-val="5">5</button>
+            <button class="key" data-val="6">6</button>
+            <button class="key op" data-val="+">+</button>
+
+            <button class="key" data-val="1">1</button>
+            <button class="key" data-val="2">2</button>
+            <button class="key" data-val="3">3</button>
+            <button class="key eq" data-act="equals">=</button>
+
+            <button class="key span-2" data-val="0">0</button>
+            <button class="key" data-val=".">.</button>
+            <button class="key op" data-act="percent">%</button>
+          </div>
+          <div class="note">Keyboard (Basic): <span class="kbd">0–9</span> <span class="kbd">+ - * / . % ( )</span> · <span class="kbd">Enter</span>=equals · <span class="kbd">Backspace</span>=delete · <span class="kbd">Esc</span>=clear</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCIENTIFIC -->
+    <section class="panel" data-pane="scientific" hidden>
+      <div class="panel-header">Scientific Calculator</div>
+      <div class="panel-body">
+        <div class="calc-wrap">
+          <div class="display">
+            <div id="s-expr" class="expr">0</div>
+            <div id="s-res" class="res">0</div>
+          </div>
+          <div class="keys" id="s-keys">
+            <button class="key" data-val="(">(</button>
+            <button class="key" data-val=")">)</button>
+            <button class="key" data-val=",">,</button>
+            <button class="key danger" data-act="clear">AC</button>
+
+            <button class="key op" data-val="^">x^y</button>
+            <button class="key op" data-val="**2">x²</button>
+            <button class="key op" data-val="**0.5">√</button>
+            <button class="key" data-act="back">⌫</button>
+
+            <button class="key" data-val="sin(">sin</button>
+            <button class="key" data-val="cos(">cos</button>
+            <button class="key" data-val="tan(">tan</button>
+            <button class="key" data-val="pi">π</button>
+
+            <button class="key" data-val="ln(">ln</button>
+            <button class="key" data-val="log10(">log</button>
+            <button class="key" data-val="exp(">exp</button>
+            <button class="key" data-val="e">e</button>
+
+            <button class="key" data-val="7">7</button>
+            <button class="key" data-val="8">8</button>
+            <button class="key" data-val="9">9</button>
+            <button class="key op" data-val="/">÷</button>
+
+            <button class="key" data-val="4">4</button>
+            <button class="key" data-val="5">5</button>
+            <button class="key" data-val="6">6</button>
+            <button class="key op" data-val="*">×</button>
+
+            <button class="key" data-val="1">1</button>
+            <button class="key" data-val="2">2</button>
+            <button class="key" data-val="3">3</button>
+            <button class="key op" data-val="-">−</button>
+
+            <button class="key span-2" data-val="0">0</button>
+            <button class="key" data-val=".">.</button>
+            <button class="key op" data-val="+">+</button>
+            <button class="key eq" data-act="equals">=</button>
+          </div>
+          <div class="note">Keyboard (Scientific): digits, <span class="kbd">+ - * / ^ ( ) , .</span>, and function letters (<span class="kbd">sin cos tan ln log exp pi e</span> typed as text). <span class="kbd">Enter</span>=equals, <span class="kbd">Backspace</span>=delete, <span class="kbd">Esc</span>=clear.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEIGHT CONVERTER -->
+    <section class="panel" data-pane="weight" hidden>
+      <div class="panel-header">Weight Conversion</div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col">
+            <label>Value</label>
+            <input id="w-value" type="number" class="input" placeholder="Enter value e.g. 2.5" />
+          </div>
+          <div class="col">
+            <label>From</label>
+            <select id="w-from">
+              <option value="kg">Kilogram (kg)</option>
+              <option value="g">Gram (g)</option>
+              <option value="mg">Milligram (mg)</option>
+              <option value="lb">Pound (lb)</option>
+              <option value="oz">Ounce (oz)</option>
+              <option value="tonne">Tonne (t)</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>To</label>
+            <select id="w-to">
+              <option value="kg">Kilogram (kg)</option>
+              <option value="g">Gram (g)</option>
+              <option value="mg">Milligram (mg)</option>
+              <option value="lb">Pound (lb)</option>
+              <option value="oz">Ounce (oz)</option>
+              <option value="tonne">Tonne (t)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="w-convert">Convert</button>
+          <button class="btn" id="w-swap">Swap</button>
+          <button class="btn danger" id="w-clear">Clear</button>
+        </div>
+        <div id="w-result" style="margin-top:12px; font-size:18px; font-weight:800"></div>
+      </div>
+    </section>
+
+    <!-- CURRENCY CONVERTER -->
+    <section class="panel" data-pane="currency" hidden>
+      <div class="panel-header">Currency Exchange</div>
+      <div class="panel-body">
+        <div class="note">Rates are editable. By default they are sample values (base = USD). For live rates, paste your own numbers.</div>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label>Amount</label>
+            <input id="c-amount" type="number" class="input" placeholder="e.g. 100" />
+          </div>
+          <div class="col">
+            <label>From</label>
+            <select id="c-from"></select>
+          </div>
+          <div class="col">
+            <label>To</label>
+            <select id="c-to"></select>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="c-convert">Convert</button>
+          <button class="btn" id="c-swap">Swap</button>
+          <button class="btn" id="c-edit">Edit Rates</button>
+          <button class="btn danger" id="c-reset">Reset Rates</button>
+        </div>
+        <div id="c-result" style="margin-top:12px; font-size:18px; font-weight:800"></div>
+        <details style="margin-top:14px">
+          <summary>View / Paste Rates JSON (base USD)</summary>
+          <textarea id="c-json" class="input" style="height:160px; margin-top:8px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;"></textarea>
+          <div class="note">Format: {"USD":1,"EUR":0.92,"GBP":0.79,"BDT":119.5,...}</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- EXTRAS -->
+    <section class="panel" data-pane="extras" hidden>
+      <div class="panel-header">Extras & Futuristic Utilities</div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col">
+            <label>Tip Calculator</label>
+            <div class="row">
+              <input id="tip-bill" class="input" type="number" placeholder="Bill amount"/>
+              <input id="tip-pct" class="input" type="number" placeholder="Tip % (e.g. 10)"/>
+              <button class="btn primary" id="tip-calc">Calculate</button>
+            </div>
+            <div id="tip-out" style="margin-top:8px; font-weight:700"></div>
+          </div>
+          <div class="col">
+            <label>Theme</label>
+            <div class="row">
+              <button class="btn" id="theme-dark">Dark Neon</button>
+              <button class="btn" id="theme-light">Light Pastel</button>
+            </div>
+            <div class="note">Instant theme swap without reloading.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  /* ---------- Tabs ---------- */
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=true);
+      btn.classList.add('active');
+      document.querySelector('[data-pane="'+btn.dataset.tab+'"]').hidden=false;
+    });
+  });
+
+  function isTypingInField(){
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable) return true;
+    return false;
+  }
+  function currentPane(){
+    const pane = document.querySelector('[data-pane]:not([hidden])');
+    return pane ? pane.getAttribute('data-pane') : 'basic';
+  }
+
+  /* ---------- Basic Calculator ---------- */
+  const bExpr = document.getElementById('b-expr'); const bRes = document.getElementById('b-res');
+  let bExpression = '';
+  const allowedBasic = /^[0-9+\-*/%.\s×÷()]+$/;
+
+  function normalizeBasic(s){
+    return String(s).replace(/×/g,'*').replace(/÷/g,'/').replace(/([+\-*/%])\s*$/,'');
+  }
+  function safeEvalBasic(str){
+    if(!str) return null;
+    str = normalizeBasic(str);
+    if(!allowedBasic.test(str)) return null;
+    try{
+      const r = Function('"use strict"; return ('+str+')')();
+      if (typeof r === 'number' && Number.isFinite(r)) return +parseFloat(r.toFixed(10));
+    }catch(e){}
+    return null;
+  }
+  function bRender(){ bExpr.textContent = bExpression || '0'; const p = safeEvalBasic(bExpression); bRes.textContent = (p ?? 0); }
+
+  document.getElementById('b-keys').addEventListener('click', (e)=>{
+    const t = e.target.closest('.key'); if(!t) return;
+    const act = t.dataset.act, val = t.dataset.val;
+    if(act === 'clear'){ bExpression=''; return bRender(); }
+    if(act === 'back'){ bExpression=bExpression.slice(0,-1); return bRender(); }
+    if(act === 'percent'){ bExpression=bExpression.replace(/(\d+(?:\.\d+)?)$/, n=> (parseFloat(n)/100)); return bRender(); }
+    if(act === 'equals'){ const v = safeEvalBasic(bExpression); if(v!=null){ bExpression = String(v); } return bRender(); }
+    bExpression += String(val||''); bRender();
+  });
+  bRender();
+
+  /* ---------- Scientific Calculator ---------- */
+  const sExpr = document.getElementById('s-expr'); const sRes = document.getElementById('s-res');
+  let sExpression='';
+  const allowedSci = /^[0-9+\-*/%^.,()\sacegilmnoptx]+$/; // letters for sin cos tan ln log exp pi e
+  function normalizeSci(s){
+    return String(s)
+      .replace(/\^/g,'**')
+      .replace(/([+\-*/%^])\s*$/,'');
+  }
+  function safeEvalSci(str){
+    if(!str) return null;
+    str = normalizeSci(str);
+    if(!allowedSci.test(str)) return null;
+    let expr = str
+      .replace(/\blog10\(/g,'Math.log10(')
+      .replace(/\bln\(/g,'Math.log(')
+      .replace(/\bsin\(/g,'Math.sin(')
+      .replace(/\bcos\(/g,'Math.cos(')
+      .replace(/\btan\(/g,'Math.tan(')
+      .replace(/\bexp\(/g,'Math.exp(')
+      .replace(/\bpi\b/g, 'Math.PI')
+      .replace(/\be\b/g, 'Math.E');
+    try{
+      const r = Function('"use strict"; return ('+expr+')')();
+      if (typeof r === 'number' && Number.isFinite(r)) return +parseFloat(r.toFixed(12));
+    }catch(e){}
+    return null;
+  }
+  function sRender(){ sExpr.textContent = sExpression || '0'; const p=safeEvalSci(sExpression); sRes.textContent = (p ?? 0); }
+
+  document.getElementById('s-keys').addEventListener('click', (e)=>{
+    const t = e.target.closest('.key'); if(!t) return;
+    const act = t.dataset.act, val=t.dataset.val;
+    if(act === 'clear'){ sExpression=''; return sRender(); }
+    if(act === 'back'){ sExpression=sExpression.slice(0,-1); return sRender(); }
+    if(act === 'equals'){ const v=safeEvalSci(sExpression); if(v!=null){ sExpression=String(v);} return sRender(); }
+    sExpression += String(val||''); sRender();
+  });
+  sRender();
+
+  /* ---------- Global Keyboard Handler (Basic + Scientific) ---------- */
+  window.addEventListener('keydown', (e)=>{
+    // Ignore when typing in any input/select/textarea
+    if (isTypingInField()) return;
+
+    const pane = currentPane();
+    const kRaw = e.key;
+    const k = kRaw.length === 1 ? kRaw : kRaw; // keep as-is, we'll test below
+
+    if (pane === 'basic'){
+      if (/^[0-9]$/.test(k) || ['+','-','*','/','.','%','(',')'].includes(k)){
+        e.preventDefault(); bExpression += k; bRender(); return;
+      }
+      if (k === 'Enter' || k === '='){ e.preventDefault(); const v=safeEvalBasic(bExpression); if(v!=null){ bExpression=String(v);} bRender(); return; }
+      if (k === 'Backspace'){ e.preventDefault(); bExpression=bExpression.slice(0,-1); bRender(); return; }
+      if (k === 'Escape'){ e.preventDefault(); bExpression=''; bRender(); return; }
+    }
+
+    if (pane === 'scientific'){
+      const isLetter = /^[a-z]$/i.test(k);
+      if (/^[0-9]$/.test(k) || ['+','-','*','/','^','.',',','(',')'].includes(k) || isLetter){
+        e.preventDefault();
+        sExpression += isLetter ? k.toLowerCase() : k;
+        sRender(); return;
+      }
+      if (k === 'Enter' || k === '='){ e.preventDefault(); const v=safeEvalSci(sExpression); if(v!=null){ sExpression=String(v);} sRender(); return; }
+      if (k === 'Backspace'){ e.preventDefault(); sExpression=sExpression.slice(0,-1); sRender(); return; }
+      if (k === 'Escape'){ e.preventDefault(); sExpression=''; sRender(); return; }
+    }
+  });
+
+  /* ---------- Weight Conversion ---------- */
+  const weightToKg = { kg:1, g:1e-3, mg:1e-6, lb:0.45359237, oz:0.028349523125, tonne:1000 };
+  function convertWeight(v, from, to){
+    const kg = v * (weightToKg[from] ?? 1);
+    return kg / (weightToKg[to] ?? 1);
+  }
+  const wVal = document.getElementById('w-value'), wFrom = document.getElementById('w-from'), wTo = document.getElementById('w-to');
+  const wOut = document.getElementById('w-result');
+  document.getElementById('w-convert').addEventListener('click', ()=>{
+    const v = parseFloat(wVal.value);
+    if (isNaN(v)){ wOut.textContent = 'Please enter a valid number.'; return; }
+    const ans = convertWeight(v, wFrom.value, wTo.value);
+    wOut.textContent = `${v} ${wFrom.value} = ${ans.toLocaleString(undefined,{maximumFractionDigits:8})} ${wTo.value}`;
+  });
+  document.getElementById('w-swap').addEventListener('click', ()=>{
+    const a = wFrom.value; wFrom.value = wTo.value; wTo.value = a;
+  });
+  document.getElementById('w-clear').addEventListener('click', ()=>{
+    wVal.value=''; wOut.textContent='';
+  });
+
+  /* ---------- Currency Converter ---------- */
+  const defaultRates = {
+    "USD":1, "EUR":0.92, "GBP":0.79, "JPY":146.0, "INR":83.2, "BDT":119.5,
+    "AUD":1.52, "CAD":1.36, "CNY":7.25, "SAR":3.75, "AED":3.67, "SGD":1.34
+  };
+  let rates = {...defaultRates};
+
+  const cFrom = document.getElementById('c-from'); const cTo = document.getElementById('c-to');
+  function refreshCurrencySelects(){
+    const codes = Object.keys(rates).sort();
+    function fill(sel){
+      sel.innerHTML = codes.map(c=>`<option value="${c}">${c}</option>`).join('');
+    }
+    fill(cFrom); fill(cTo);
+    cFrom.value = 'USD'; cTo.value = 'BDT';
+  }
+  refreshCurrencySelects();
+  document.getElementById('c-json').value = JSON.stringify(rates, null, 2);
+
+  document.getElementById('c-edit').addEventListener('click', ()=>{
+    try{
+      const obj = JSON.parse(document.getElementById('c-json').value);
+      if (!obj || typeof obj !== 'object') throw new Error('Invalid JSON');
+      rates = obj;
+      refreshCurrencySelects();
+      document.getElementById('c-result').textContent = 'Rates updated.';
+    }catch(err){
+      document.getElementById('c-result').textContent = 'Invalid JSON: ' + err.message;
+    }
+  });
+  document.getElementById('c-reset').addEventListener('click', ()=>{
+    rates = {...defaultRates};
+    document.getElementById('c-json').value = JSON.stringify(rates, null, 2);
+    refreshCurrencySelects();
+    document.getElementById('c-result').textContent = 'Rates reset to defaults.';
+  });
+  document.getElementById('c-swap').addEventListener('click', ()=>{
+    const a = cFrom.value; cFrom.value = cTo.value; cTo.value = a;
+  });
+  document.getElementById('c-convert').addEventListener('click', ()=>{
+    const amt = parseFloat(document.getElementById('c-amount').value);
+    if (isNaN(amt)) { document.getElementById('c-result').textContent = 'Enter a valid amount.'; return; }
+    const f = cFrom.value, t = cTo.value;
+    if (rates[f]==null || rates[t]==null){ document.getElementById('c-result').textContent = 'Unknown currency code(s).'; return; }
+    const inUSD = amt / rates[f];
+    const out = inUSD * rates[t];
+    document.getElementById('c-result').textContent = `${amt} ${f} = ${out.toLocaleString(undefined,{maximumFractionDigits:6})} ${t}`;
+  });
+
+  /* ---------- Extras ---------- */
+  document.getElementById('tip-calc').addEventListener('click', ()=>{
+    const bill = parseFloat(document.getElementById('tip-bill').value);
+    const pct = parseFloat(document.getElementById('tip-pct').value);
+    const out = document.getElementById('tip-out');
+    if (isNaN(bill) || isNaN(pct)) { out.textContent = 'Enter bill and tip %'; return; }
+    const tip = bill * pct / 100; const total = bill + tip;
+    out.textContent = `Tip: ${tip.toFixed(2)} | Total: ${total.toFixed(2)}`;
+  });
+
+  // Theme toggles
+  const darkVars = {
+    '--bg':'#0f1115','--surface':'#151923','--card':'#1a2030','--text':'#ecf2ff','--muted':'#94a3b8',
+    '--primary':'#00e5a8','--primary-2':'#4fd1ff','--danger':'#ff5d5d'
+  };
+  const lightVars = {
+    '--bg':'#f5f7fb','--surface':'#ffffff','--card':'#ffffff','--text':'#0b1220','--muted':'#6b7280',
+    '--primary':'#2563eb','--primary-2':'#60a5fa','--danger':'#ef4444'
+  };
+  document.getElementById('theme-dark').addEventListener('click', ()=>{ for(const k in darkVars){ document.documentElement.style.setProperty(k, darkVars[k]); } });
+  document.getElementById('theme-light').addEventListener('click', ()=>{ for(const k in lightVars){ document.documentElement.style.setProperty(k, lightVars[k]); } });
+</script>
+</body>
+</html>
